@@ -48,7 +48,7 @@ def get_page_as_dataframe_bilan(url, page, logger):
     df["place"] = df["place"].replace(0, pd.NA).ffill()
     return df
 
-def get_page_as_dataframe_resultats(url, page, logger):
+def get_page_as_dataframe_resultats(url, page, competition, logger):
     url_page = url+"&frmposition="+str(page)
     df = pd.read_html(get_html_content(url_page, logger), extract_links="all")[0]
     df.dropna(subset=4, inplace=True)
@@ -68,6 +68,7 @@ def get_page_as_dataframe_resultats(url, page, logger):
     df["place"] = df["place"].replace("-", 0)
     df = df[pd.to_numeric(df["place"], errors="coerce").notna()]
     df["place"] = df["place"].replace(0, pd.NA).ffill()
+    df["competition"] = competition
     return df
 
 
@@ -142,7 +143,7 @@ def main_resultats(competitions, logger=None):
         nb_pages = get_nb_pages(url, logger)
         logger.info("Nombre de pages : "+str(nb_pages))
         for page in range(nb_pages):
-            dataframes.append(get_page_as_dataframe_resultats(url, page, logger))
+            dataframes.append(get_page_as_dataframe_resultats(url, page, competition, logger))
 
     dataframe = pd.concat(dataframes)
     logger.info(str(len(dataframe))+" resultats")
