@@ -63,8 +63,11 @@ elif mode == "Resultats":
     frm_list = []
     if st.button("Afficher les competitions 31/32/82 de l'annee choisie"):
         with st.spinner("Veuillez patienter..."):
-            dataframe = athle_export.main_competitions(annee)       
-            st.session_state.competitions = dataframe
+            dataframe = athle_export.main_competitions(annee)
+            if len(dataframe) > 0:
+                st.session_state.competitions = dataframe
+            else:
+                st.warning("Pas de competitions trouvees")
             
     if 'competitions' not in st.session_state:
         frm_list = []

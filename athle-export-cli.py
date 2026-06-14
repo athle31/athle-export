@@ -120,14 +120,22 @@ def main_bilan(categories, annee, structure=None, logger=None):
 
             logger.info(url)
 
-            nb_pages = get_nb_pages(url, logger)
+            try:
+                nb_pages = get_nb_pages(url, logger)
+            except ValueError:
+                logger.info("Pas de pages trouvees")
+                nb_pages = 0
             logger.info("Nombre de pages : "+str(nb_pages))
             for page in range(nb_pages):
                 dataframes.append(get_page_as_dataframe_bilan(url,
                                                               page,
                                                               logger))
 
-    dataframe = pd.concat(dataframes)
+    try:
+        dataframe = pd.concat(dataframes)
+    except ValueError:
+        logger.info("Resultats introuvables")
+        dataframe = pd.DataFrame()
     logger.info(str(len(dataframe))+" resultats")
     return dataframe
 
@@ -140,12 +148,21 @@ def main_resultats(competitions, logger=None):
         logger.info("Recherche pour la competition "+competition)
         url = "https://www.athle.fr/bases/liste.aspx?frmbase=resultats&frmmode=1&frmespace=0&frmcompetition="+str(competition)
         logger.info(url)
-        nb_pages = get_nb_pages(url, logger)
+        try:
+            nb_pages = get_nb_pages(url, logger)
+        except ValueError:
+            logger.info("Pas de pages trouvees")
+            nb_pages = 0
+
         logger.info("Nombre de pages : "+str(nb_pages))
         for page in range(nb_pages):
             dataframes.append(get_page_as_dataframe_resultats(url, page, competition, logger))
 
-    dataframe = pd.concat(dataframes)
+    try:
+        dataframe = pd.concat(dataframes)
+    except ValueError:
+        logger.info("Resultats introuvable")
+        dataframe = pd.DataFrame()
     logger.info(str(len(dataframe))+" resultats")
     return dataframe
 
@@ -180,14 +197,23 @@ def main_competitions(saison, logger=None):
     for dep in [31, 32, 82]:
         url = "https://www.athle.fr/bases/liste.aspx?frmpostback=true&frmbase=resultats&frmmode=2&frmespace=0&frmsaison="+str(saison)+"&frmdate1=&frmdate2=&frmtype1=Stade&frmniveau=D%C3%A9partemental&frmligue=OCC&frmdepartement=0"+str(dep)+"&frmniveaulab=&frmeprrch=&frmtype2=Championnat&frmtype3=&frmtype4=&frmclub="
         logger.info(url)
-        nb_pages = get_nb_pages(url, logger)
+        try:
+            nb_pages = get_nb_pages(url, logger)
+        except ValueError:
+            logger.info("Pas de pages trouvees")
+            nb_pages = 0
+
         logger.info("Nombre de pages : "+str(nb_pages))
         for page in range(nb_pages):
             dataframes.append(get_page_as_dataframe_competitions(url, page, logger))
 
-    dataframe = pd.concat(dataframes)
-    dataframe["date"] = dataframe["date"].apply(parse_date)
-    dataframe = dataframe.sort_values("date")
+    try:
+        dataframe = pd.concat(dataframes)
+        dataframe["date"] = dataframe["date"].apply(parse_date)
+        dataframe = dataframe.sort_values("date")
+    except ValueError:
+        logger.info("Resultats introuvables")
+        dataframe = pd.DataFrame()
     logger.info(str(len(dataframe))+" resultats")
     return dataframe
 
