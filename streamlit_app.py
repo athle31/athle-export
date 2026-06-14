@@ -1,15 +1,15 @@
 import streamlit as st
+import pandas as pd
 import numpy as np
 import datetime
 import importlib
 import logging
 athle_export = importlib.import_module("athle-export-cli")
-
+athle_challenges = importlib.import_module("athle-challenges-cli")
 
 st.image("logo.png")
 
-
-mode = st.selectbox("Mode", ("Bilan", "Resultats"))
+mode = st.selectbox("Mode", ("Bilan", "Resultats", "Challenges"))
 
 if mode == "Bilan":
     categories = st.multiselect(
@@ -118,3 +118,31 @@ elif mode == "Resultats":
                 file_name='resultats.csv',
                 mime='text/csv'
             )
+
+elif mode == "Challenges":
+    resultats = st.file_uploader("Resultats des competitions", type="csv")
+    if resultats is not None:
+        dataframe = pd.read_csv(resultats)
+        indiv, equipes = athle_challenges.main_bemi(dataframe)
+        st.info("Resultats du challenge disponibles !")
+        st.download_button(
+            label="Resultats individuels",
+            data=indiv.to_csv(),
+            file_name='individuels.csv',
+            mime='text/csv'
+        )
+        st.download_button(
+            label="Resultats equipes",
+            data=equipes.to_csv(),
+            file_name='equipes.csv',
+            mime='text/csv'
+        )
+
+        for cat in sorted(list(set(indiv["categorie"].values))):
+            st.subheader(cat)
+            st.dataframe(indiv[indiv["categorie"] == cat].reset_index(drop=True))
+            
+        for cat in sorted(list(set(equipes["categorie"].values))):
+            st.subheader(cat)
+            st.dataframe(equipes[equipes["categorie"] == cat].reset_index(drop=True))
+
