@@ -40,6 +40,7 @@ def main_bemi(dataframe):
 
     dataframe["sexe"] = dataframe["categorie"].str[2]
     dataframe["unisexe"] = dataframe["categorie"].str[:2] + "X"
+    dataframe["club.keep"] = dataframe["club"]
     dataframe = dataframe.groupby(["club", "unisexe"],
                                   group_keys=True).apply(total_club).reset_index(drop=True) 
     dataframe = dataframe.sort_values(by="points", ascending=False)
@@ -47,6 +48,7 @@ def main_bemi(dataframe):
     dataframe.drop_duplicates(inplace=True)
     equipes = dataframe.copy()
     equipes = equipes.rename(columns={"unisexe": "categorie"})
+    dataframe["club"] = dataframe["club.keep"]
 
     equipes = equipes.loc[:, ["club", "points", "categorie", "membres", "departement", "region", "epreuve"]]
 
