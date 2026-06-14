@@ -48,7 +48,7 @@ def main_bemi(dataframe):
     dataframe.drop_duplicates(inplace=True)
     equipes = dataframe.copy()
     equipes = equipes.rename(columns={"unisexe": "categorie"})
-    dataframe["club"] = dataframe["club.keep"]
+    equipes["club"] = equipes["club.keep"]
 
     equipes = equipes.loc[:, ["club", "points", "categorie", "membres", "departement", "region", "epreuve"]]
 
