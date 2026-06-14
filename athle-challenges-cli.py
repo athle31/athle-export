@@ -36,7 +36,7 @@ def main_bemi(dataframe):
     dataframe.drop_duplicates(inplace=True)
     dataframe = dataframe.sort_values(by="points", ascending=False)
     indiv = dataframe.copy()
-    indiv = indiv.loc[:, ["nom/prenom","club","points", "calcul", "categorie", "departement", "region" , "epreuve", "id"]]
+    indiv = indiv.loc[:, ["nom/prenom","club","points", "calcul", "categorie", "departement", "region" , "epreuve"]]
 
     dataframe["sexe"] = dataframe["categorie"].str[2]
     dataframe["unisexe"] = dataframe["categorie"].str[:2] + "X"
