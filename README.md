@@ -35,7 +35,7 @@ python athle-export-cli.py
 
 Par défaut, l'outil calcule le top 100 benjamins et minimes de l'année en cours et l'enregistre dans le fichier "bilan.csv".
 
-```python athle-export-cli.py -h``` permet d'accéder à tous les paramètres en choisissant :
+```python athle-export-cli.py bilan -h``` permet d'accéder à tous les paramètres en choisissant :
 - les catégories : "BE" ou "MI" seulement par exemple
 - la structure :
   - par un code de 6 chiffres pour un club (par exemple 031015)
