@@ -120,7 +120,7 @@ elif mode == "Resultats":
             )
 
 elif mode == "Challenges":
-    resultats = st.file_uploader("Resultats des competitions", type="csv")
+    resultats = st.file_uploader("Resultats des competitions (BE/MI)", type="csv")
     if resultats is not None:
         dataframe = pd.read_csv(resultats)
         st.dataframe(dataframe)
@@ -146,4 +146,27 @@ elif mode == "Challenges":
         for cat in sorted(list(set(equipes["categorie"].values))):
             st.subheader(cat)
             st.dataframe(equipes[equipes["categorie"] == cat].reset_index(drop=True))
+
+
+    resultats = st.file_uploader("Resultats des competitions (CA/JU)", type="csv")
+    if resultats is not None:
+        dataframe = pd.read_csv(resultats)
+        st.dataframe(dataframe)
+        classement = athle_challenges.main_caju(dataframe)
+        st.info("Resultats du challenge disponibles !")
+        st.download_button(
+            label="Resultats",
+            data=classement.to_csv(),
+            file_name='resultats.csv',
+            mime='text/csv'
+        )
+
+        for cat in sorted(list(set(classement["categorie"].values))):
+            st.subheader(cat)
+            for fam in sorted(list(set(classement["famille"].values))):
+                st.subheader(fam)
+                extract = classement[(classement["categorie"] == cat) & (classement["famille"] == fam)]
+                extract = extract.sort_values("points_cumul_challenge",
+                                              ascending=False).reset_index(drop=True)
+                st.dataframe(extract)
 

@@ -4,6 +4,7 @@ import os
 import pandas as pd
 
 pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
 
 def main_bemi(dataframe):
     def total_indiv(df):
@@ -53,8 +54,60 @@ def main_bemi(dataframe):
 
     equipes = equipes.loc[:, ["club", "points", "categorie", "membres", "departement", "region", "epreuve"]]
 
-    
     return indiv, equipes
+
+
+def main_caju(dataframe):
+    famille = dict()
+    famille["sprint/haies"] = ["100m", "200m", "400m", "Haies"]
+    famille["demifond"] = ["800m", "1 500m", "000m"]
+    famille["marche"] = ["Marche"]
+    famille["sauts"] = ["Perche", "Longueur", "Hauteur", "Triple"]
+    famille["lancers"] = ["Javelot", "Poids", "Disque", "Marteau"]
+    famille["epcomb"] = ["Heptathlon", "Decathlon"]
+
+    dataframe = dataframe[dataframe["categorie"].str.startswith("JU")|dataframe["categorie"].str.startswith("CA")]
+    dataframe = dataframe[dataframe["departement"]==31]
+    dataframe = dataframe.copy()
+    dataframe["categorie"] = dataframe["categorie"].str.split("/").str[0]
+    for key in famille.keys():
+        for ep in famille[key]:
+            dataframe.loc[dataframe["epreuve"].str.contains(ep), "famille"] = key
+    dataframe.loc[dataframe["epreuve"].str.contains("X"), "famille"] = "relais"
+    dataframe.loc[dataframe["famille"] == "epcomb", "points"] = pd.to_numeric(dataframe[dataframe["famille"] == "epcomb"]["performance"].str.replace(" pts", "").str.replace(" ", ""), errors="coerce")
+    dataframe = dataframe.dropna(subset=["points"])   
+    dataframe = (
+        dataframe.sort_values("points", ascending=False)
+        .drop_duplicates(subset=["id", "epreuve"], keep="first")
+    )
+
+    dataframe["place_challenge"] = (
+        dataframe.groupby(["epreuve", "categorie"])["points"]
+        .rank(method="min", ascending=False)
+        .astype(int))
+
+    nombre_familles = dataframe.groupby("id")["famille"].transform("nunique")
+    mask = (dataframe["famille"] != "epcomb") | (nombre_familles >= 3)
+    dataframe = dataframe[mask]
+    
+    mask_keep_all = dataframe["famille"].isin(["epcomb", "marche"])
+    mask_dup = dataframe.duplicated(subset=["id", "famille"], keep=False)
+    dataframe = dataframe[mask_keep_all | mask_dup]
+    
+    points_map = {1: 100, 2: 80, 3: 60, 4: 50, 5: 40, 6: 30, 7: 20, 8: 10}
+    dataframe["points_challenge"] = dataframe["place_challenge"].map(points_map).fillna(0)
+    dataframe["points_challenge_bonus"] = dataframe["points_challenge"]
+    
+    dataframe.loc[dataframe["niveau"].str.startswith("R", na=False), "points_challenge_bonus"] += 10
+    dataframe.loc[dataframe["niveau"].str.startswith("IR", na=False), "points_challenge_bonus"] += 20
+    dataframe.loc[dataframe["niveau"].str.startswith("N", na=False), "points_challenge_bonus"] += 30
+
+    dataframe["points_cumul_challenge"] = (
+        dataframe.groupby(["id", "famille"])["points_challenge_bonus"]
+        .transform(lambda x: x.nlargest(2).sum())
+    )
+
+    return dataframe
 
 
 def cli():
@@ -87,6 +140,12 @@ def cli():
             os.makedirs(args.out_dir)
         indiv.to_csv(os.path.join(args.out_dir, "individuels.csv"))
         equipes.to_csv(os.path.join(args.out_dir, "equipes.csv"))
+
+    if args.challenge == "CAJU":
+        resultats = main_caju(dataframe)
+        if not os.path.exists(args.out_dir):
+            os.makedirs(args.out_dir)
+        resultats.to_csv(os.path.join(args.out_dir, "resultats.csv"))
     
 if __name__ == "__main__":
     cli()
