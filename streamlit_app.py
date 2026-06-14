@@ -123,6 +123,7 @@ elif mode == "Challenges":
     resultats = st.file_uploader("Resultats des competitions", type="csv")
     if resultats is not None:
         dataframe = pd.read_csv(resultats)
+        st.dataframe(dataframe)
         indiv, equipes = athle_challenges.main_bemi(dataframe)
         st.info("Resultats du challenge disponibles !")
         st.download_button(
